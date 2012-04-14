@@ -197,6 +197,7 @@
                                      (translate-item backend
                                                      (second args)))))))
 
+
 (defmethod translate-named-item ((backend javascript-backend) (item (eql 'closure-template.parser:for-tag)) args)
   (let* ((loop-var (intern (string-upcase (second (first (first args))))))
          (*local-variables* (cons loop-var
@@ -254,6 +255,12 @@
                         ))))
           `(progn ,@(reverse call-expr)
                   ,(list fun-name _data_ *js-print-target*))))))
+
+
+
+(defmethod translate-named-item ((backend javascript-backend) (item (eql 'closure-template.parser:msg)) args)
+  (translate-item backend (cdr args)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; translate and compile template methods

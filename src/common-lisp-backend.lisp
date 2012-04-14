@@ -309,7 +309,11 @@
         (make-with-command-handler cmd))
        (closure-template.parser:call
         (make-call-command-hadler cmd))
+       (closure-template.parser:msg
+        (make-msg-command-handler cmd))
        (closure-template.parser:comment nil)))))
+
+
 
 ;;;; literal
 
@@ -498,6 +502,17 @@
                                             (collect (funcall (cdr arg) env)))
                                       (funcall data-expr env))
                               out)))))
+;;;; msg
+
+(defun make-msg-command-handler (cmd)
+  (assert (eq 'closure-template.parser:msg (car cmd)))
+  (let (desc mean
+        ;; (desc (getf (second cmd) :desc))
+        ;; (mean (getf (second cmd) :mean))
+        (body (make-code-block-handler (cddr cmd))))
+    (declare (ignore desc mean))
+    (named-lambda msg-command-handler (env out)
+      (funcall body env out))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; namespace

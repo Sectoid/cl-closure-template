@@ -536,6 +536,19 @@ Hello world{/template}")
 {template test}{call name=\"'hello' + 'World'\" /}{/template}")
                  (template-call "TEST"))))
 
+
+;;;; msg
+
+(addtest (common-lisp-backend-test)
+  msg-1
+  (ensure-same "Hello World"
+               (progn
+                 (compile-template :common-lisp-backend
+                                   "{template test}{msg desc=\"Hello\"}Hello World{/msg}{/template}")
+                 (template-call "TEST"))))
+
+
+
 ;;;; warnings
 
 (deftestsuite common-lisp-backend-warnings-test (common-lisp-backend-test) ())
