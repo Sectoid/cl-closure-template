@@ -19,6 +19,7 @@
            
            #:foreach
            #:call
+           #:msg
            #:param
            #:literal
            #:for-tag

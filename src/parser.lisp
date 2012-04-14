@@ -537,6 +537,25 @@
 
 (define-rule call (or short-call full-call))
 
+;;; msg
+
+(define-rule msg-mean (and "meaning=\"" (* (and (! "\"") character)) "\"")
+  (:destructure (start mean end)
+    (declare (ignore start end))
+    mean))
+
+(define-rule msg-desc (and "desc=\"" (* (and (! "\"") character)) "\"")
+  (:destructure (start desc end)
+    (declare (ignore start end))
+    (text desc)))
+
+(define-rule msg (and "{msg" whitespace (? msg-mean) (? whitespace) msg-desc (? whitespace) "}" (? code-block) "{/msg}")
+  (:destructure (start w1 mean w2 desc w3 rb code end)
+    (declare (ignore start w1 w2 w3 rb end))
+    (list* 'msg 
+           (list :desc desc :mean mean)
+           code)))
+
 ;;; code-block
         
 (define-rule code-block
@@ -548,6 +567,7 @@
            for
            call
            with
+           msg
 
            comment
            whitespace

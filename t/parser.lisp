@@ -428,6 +428,14 @@
                  (closure-template.parser:for-tag ((:variable :x) (:range 4 10 2)) " ! "))
                (parse-single-template "{template test}{for $x in range(4, 10, 2)} ! {/for}{/template}")))
 
+;;;; msg
+
+(addtest (template-parser-test)
+  msg-1
+  (ensure-same '(closure-template.parser:template ("test")
+                 (closure-template.parser:msg (:desc "test1" :mean nil) "test! "))
+               (parse-single-template "{template test}{msg desc=\"test1\"}test! {/msg}{/template}")))
+
 
 ;;;; call
 
