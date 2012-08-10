@@ -30,7 +30,11 @@
            #:if-tag
            #:template
            #:print-tag
-           #:comment))
+           #:comment
+           
+           ;; Non-standard extensions
+           #:block
+           ))
 
 (defpackage #:closure-template
   (:use #:cl #:iter #:alexandria)

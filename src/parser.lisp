@@ -573,6 +573,8 @@
            call
            with
            msg
+           
+           block
 
            comment
            whitespace
@@ -657,6 +659,16 @@
                  traits
                  (simplify-code code))
           (list 'template traits)))))
+
+;;; block
+(define-rule block (and "{block" whitespace (and template-name (* (and #\. template-name))) (? whitespace) #\} 
+                        (? whitespace) (? code-block)
+                        "{/block}")
+  (:destructure (start w1 name w2 end w3 code finish)
+    (declare (ignore start w1 w2 w3 end finish))
+    (list* 'block (text name)
+           (simplify-code code))))
+
                 
 ;;; toplevel 
 
