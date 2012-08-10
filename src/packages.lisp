@@ -7,7 +7,8 @@
 
 (defpackage #:closure-template.parser
   (:use #:cl #:iter #:esrap)
-  (:export #:parse-template
+  (:export #:*uglify*
+           #:parse-template
            #:parse-expression
            #:closure-template-parse
 
@@ -33,8 +34,9 @@
 
 (defpackage #:closure-template
   (:use #:cl #:iter #:alexandria)
-  (:import-from #:closure-template.parser #:parse-template  #:parse-expression #:not-equal #:lispify-string)
-  (:export #:parse-template
+  (:import-from #:closure-template.parser #:parse-template  #:parse-expression #:not-equal #:lispify-string #:*uglify*)
+  (:export #:*uglify*
+           #:parse-template
            #:parse-expression
            #:translate-template
            #:*default-closure-template-package*

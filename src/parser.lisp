@@ -37,9 +37,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; whitespace
+(defparameter *uglify* t)
 
 (define-rule whitespace (+ (or #\space #\tab #\newline))
-  (:constant " "))
+  (:destructure (&rest wsp)
+    (if *uglify* 
+        " "
+        (apply #'concatenate 'string wsp))))
+
 
 ;;; string literal
 
