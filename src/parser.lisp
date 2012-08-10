@@ -43,7 +43,7 @@
   (:destructure (&rest wsp)
     (if *uglify* 
         " "
-        (apply #'concatenate 'string wsp))))
+        (text wsp))))
 
 
 ;;; string literal
