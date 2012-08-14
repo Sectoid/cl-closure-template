@@ -66,4 +66,8 @@
            #:ttable-extend-package
            #:ttable-sync-package
            #:ensure-ttable-package
-           #:package-ttable))
+           #:package-ttable
+
+           ;; Non-standard extensions
+           #:with-blocks))
+

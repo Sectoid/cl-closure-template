@@ -311,8 +311,9 @@
         (make-call-command-hadler cmd))
        (closure-template.parser:msg
         (make-msg-command-handler cmd))
-       (closure-template.parser:comment nil)))))
-
+       (closure-template.parser:comment nil)
+       (closure-template.parser:block
+        (make-block-command-handler cmd))))))
 
 
 ;;;; literal
@@ -513,6 +514,31 @@
     (declare (ignore desc mean))
     (named-lambda msg-command-handler (env out)
       (funcall body env out))))
+
+
+;;;; block extension
+
+(defvar *blocks* nil)
+
+(defun make-block-command-handler (cmd)
+  (assert (eq 'closure-template.parser:block (car cmd)))
+  (destructuring-bind ((name) &body code) (cdr cmd)
+    (let ((name (lispify-string name))
+          (body (make-code-block-handler code)))
+      (named-lambda block-handler (env out)
+        (if *blocks*
+          (multiple-value-bind (value value-p) (gethash name *blocks*)
+            (write-template-atom (if value-p 
+                                     value
+                                     (setf (gethash name *blocks*)
+                                           (with-output-to-string (out)
+                                             (funcall body env out))))
+                                 out))
+          (funcall body env out))))))
+
+(defmacro with-blocks ((&optional (value '(make-hash-table :test #'equal))) &body body)
+  `(let ((*blocks* ,value))
+     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; namespace
