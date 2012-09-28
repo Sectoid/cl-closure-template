@@ -523,11 +523,20 @@
 (define-rule template-name (and alpha-char (*  (or alphanumeric #\_ #\-)))
   (:text t))
 
-(define-rule call-template-name (or (and "name=\"" expression "\"") template-name)
-  (:lambda (name)
-    (if (consp name)
-        (second name)
-        name)))
+(define-rule call-template-name (or (and "name=\"" expression "\"")
+                                    (and template-name)
+                                    (and template-name (+ (and #\. template-name))))
+  (:destructure (name &rest tail)
+    (cond 
+      ((not tail)
+       (list :name name :ns nil))
+      ((equal name "name=\"") 
+       (list :name (first tail) :ns nil))
+      (t (let* ((parts (car tail))
+                (namespace-name (text name (butlast parts)))
+                (template-name (remove #\. (text (last parts)))))
+           (list :name template-name :ns namespace-name))))))
+        
                 
 (define-rule short-call (and "{call" whitespace call-template-name (? call-data) (? whitespace) "/}")
   (:destructure (start w1 name data w2 end)

@@ -485,7 +485,7 @@
               (funcall body env out)))))))
 
 (defun make-call-command-hadler (cmd)
-  (destructuring-bind (name data &rest params) (cdr cmd)
+  (destructuring-bind ((&key name (ns nil)) data &rest params) (cdr cmd)
     (let ((data-expr (make-call-data-handler data))
           (args (iter (for param in params)
                       (collect
@@ -493,9 +493,13 @@
                                 (make-param-handler param)))))
           (name-expr (if (stringp name)
                          (constantly name)
-                         (make-expression-handler name))))
+                         (make-expression-handler name)))
+          (ns-expr (constantly ns)))
       (named-lambda call-command-handler (env out)
-        (ttable-call-template *ttable*
+        (ttable-call-template (let ((ns (funcall ns-expr env)))
+                                (if ns
+                                    (package-ttable (find-package (lispify-string ns)))
+                                    *ttable*))
                               (lispify-string (funcall name-expr env))
                               (append (iter (for arg in args)
                                             (collect (car arg))
