@@ -554,7 +554,10 @@
     (declare (ignore start end))
     (text desc)))
 
-(define-rule msg (and "{msg" whitespace (? msg-mean) (? whitespace) msg-desc (? whitespace) "}" (? code-block) "{/msg}")
+(define-rule msg (and "{msg"
+                      (* whitespace) (? (and whitespace msg-mean))
+                      (* whitespace) (? (and whitespace msg-desc))
+                      (* whitespace) "}" (? code-block) "{/msg}")
   (:destructure (start w1 mean w2 desc w3 rb code end)
     (declare (ignore start w1 w2 w3 rb end))
     (list* 'msg 
