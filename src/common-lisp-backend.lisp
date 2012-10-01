@@ -171,8 +171,10 @@
       (%nonblank (funcall expr env)))))
 
 (defun make-list-handler (lst)
-  (named-lambda variable-handler (env)
-    (mapcar #'(lambda (x) (funcall x env)) lst)))
+  (let ((body (mapcar #'make-expression-handler lst)))
+    (named-lambda variable-handler (env)
+      (mapcar #'(lambda (x) (funcall x env)) body))))
+
 
 (defun make-if-function-handler (condition success fail)
   (let ((condition-expr (make-boolean-expression-handler condition))
