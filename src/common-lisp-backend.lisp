@@ -170,6 +170,10 @@
     (named-lambda boolean-handler (env)
       (%nonblank (funcall expr env)))))
 
+(defun make-list-handler (lst)
+  (named-lambda variable-handler (env)
+    (mapcar #'(lambda (x) (funcall x env)) lst)))
+
 (defun make-if-function-handler (condition success fail)
   (let ((condition-expr (make-boolean-expression-handler condition))
         (success-expr (make-expression-handler success))
@@ -257,6 +261,8 @@
         (make-variable-handler (second expr)))
        ((:is-first :is-last :index)
         (make-foreach-function-handler (car expr) (second (second expr))))
+       (list
+        (make-list-handler (cdr expr)))
        (if
         (make-if-function-handler (first (cdr expr))
                                   (second (cdr expr))

@@ -117,9 +117,39 @@
 (define-rule false "false" (:constant :nil))
 (define-rule boolean (or true false))
 
+;;; list literal
+
+(define-rule list-literal (and #\[ (? (and expression (* (and #\, expression )))) #\])
+  (:destructure (start body end)
+    (declare (ignore start end))
+    (list* 'list (and body (list* (first body) (mapcar #'second (second body)))))))
+
+;;; map literal
+
+(define-rule map-item (and string (* whitespace) #\: (* whitespace) expression)
+  (:destructure (key w1 delim w2 val)
+    (declare (ignore w1 w2 delim))
+    (cons key val)))
+
+(define-rule map-empty-literal (and #\[ (* whitespace) #\: (* whitespace) #\])
+  (:constant nil))
+
+(define-rule map-literal (or map-empty-literal (and #\[ (* whitespace) map-item
+                                                    (*  (and #\, map-item)) 
+                                                    (* whitespace) #\]))
+  (:lambda (data)
+    (list* 'list
+           (when data
+             (destructuring-bind (start w1 item rest w2 end) data
+               (declare (ignore start w1 w2 end))
+               (mapcan #'(lambda (x)
+                           (list (lispify-name (car x))
+                                 (cdr x)))
+                       (list* item rest)))))))
+
 ;;; literal
 
-(define-rule expression-literal (or number null boolean string))
+(define-rule expression-literal (or number null boolean string list-literal map-literal))
 
 ;;; variable
 
@@ -136,7 +166,7 @@
     (list :dot (lispify-name (second list)))))
   
 (define-rule aref (or (and #\[ expression #\])
-                  (and #\. integer))
+                      (and #\. integer))
   (:lambda (list)
     (list 'elt (second list))))
 
@@ -220,6 +250,15 @@
           (return (first expr)))
         (setf expr (reduce-ref expr))))))
 
+(define-rule ternary-operator (and expression 
+                                   #\? expression
+                                   #\: expression)
+  (:destructure (condition then else)
+    `(if ,condition
+         ,then
+         ,else)))
+
+
 (defmacro define-operator (name &optional (val (string-downcase (symbol-name name))))
   `(define-rule ,name (and (? whitespace) ,val (? whitespace))
      (:constant ',name)))
@@ -238,8 +277,8 @@
 (define-operator not-equal "!=")
 (define-operator and "and")
 (define-operator or "or")
-(define-operator ?)
-(define-operator |:|)
+;; (define-operator ?)
+;; (define-operator |:|)
 
 (define-rule operator
   (or - not
@@ -248,7 +287,7 @@
       <= >= < >
       equal not-equal
       and or
-      ? |:|))
+      ternary-operator))
 
 (defparameter *infix-ops-priority* 
   '(* / rem
@@ -267,18 +306,6 @@
        (replace-subseq infix 0 2
                        (list '-
                              (second infix))))
-   
-   ;;?: ternary
-   (let* ((pos1 (position '? infix))
-          (pos2 (if pos1 (position '|:| infix :start pos1)))
-          (len (length infix)))
-     (if pos2
-         (replace-subseq infix 0 len
-                         (list 'if
-                               (->prefix (subseq infix 0 pos1))
-                               (->prefix (subseq infix (1+ pos1) pos2))
-                               (->prefix (subseq infix (1+ pos2)))))))
-   
    ;; binary and unary
    (let* ((pos (iter (for op in *infix-ops-priority*)
                      (for pos = (position op infix))
