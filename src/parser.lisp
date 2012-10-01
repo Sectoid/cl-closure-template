@@ -551,17 +551,16 @@
   (:text t))
 
 (define-rule call-template-name (or (and "name=\"" expression "\"")
-                                    (and template-name)
-                                    (and template-name (+ (and #\. template-name))))
-  (:destructure (name &rest tail)
+                                    (and template-name (* (and #\. template-name))))
+  (:destructure (name tail &rest _)
+    (declare (ignore _))
     (cond 
       ((not tail)
        (list :name name :ns nil))
       ((equal name "name=\"") 
        (list :name (first tail) :ns nil))
-      (t (let* ((parts (car tail))
-                (namespace-name (text name (butlast parts)))
-                (template-name (remove #\. (text (last parts)))))
+      (t (let* ((namespace-name (text name (butlast tail)))
+                (template-name (remove #\. (text (last tail)))))
            (list :name template-name :ns namespace-name))))))
         
                 
