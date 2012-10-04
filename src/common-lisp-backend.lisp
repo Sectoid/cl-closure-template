@@ -140,6 +140,8 @@
   (:method (el)
     el))
 
+(defvar *injected-data* nil)
+
 (defgeneric fetch-property (map key)
   (:method ((map hash-table) key)
     (multiple-value-bind (val found) (gethash key map)
@@ -163,7 +165,9 @@
 
 (defun make-variable-handler (varkey)
   (named-lambda variable-handler (env)
-    (fetch-property env varkey)))
+    (if (eql varkey :ij)
+        *injected-data*
+        (fetch-property env varkey))))
 
 (defun make-boolean-expression-handler (expr)
   (let ((expr (make-expression-handler expr)))

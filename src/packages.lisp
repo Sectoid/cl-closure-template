@@ -46,6 +46,7 @@
            #:encode-uri
            #:encode-uri-component
            #:decode-uri
+           #:*injected-data*
 
            #:compile-template
            #:compile-cl-templates
