@@ -134,9 +134,10 @@
 (define-rule map-empty-literal (and #\[ (* whitespace) #\: (* whitespace) #\])
   (:constant nil))
 
-(define-rule map-literal (or map-empty-literal (and #\[ (* whitespace) map-item
-                                                    (*  (and #\, map-item)) 
-                                                    (* whitespace) #\]))
+(define-rule map-literal (or map-empty-literal 
+                             (and #\[ (* whitespace) map-item
+                                      (* (and #\, map-item)) 
+                                      (* whitespace) #\]))
   (:lambda (data)
     (list* 'list
            (when data
@@ -145,11 +146,11 @@
                (mapcan #'(lambda (x)
                            (list (lispify-name (car x))
                                  (cdr x)))
-                       (list* item rest)))))))
+                       (list* item (mapcar #'second rest))))))))
 
 ;;; literal
 
-(define-rule expression-literal (or number null boolean string list-literal map-literal))
+(define-rule expression-literal (or number null boolean string map-literal list-literal))
 
 ;;; variable
 
@@ -227,11 +228,12 @@
                               (second op))))))
 
 (define-rule expression-part (and (? whitespace)
-                                  (+ (or expression-literal variable dotref aref funcall parenthesis))
+                                  (and (or expression-literal variable funcall parenthesis) (* (or dotref aref)))
                                   (? whitespace))
-  (:destructure (w1 expr w2)
+  (:destructure (w1 raw-expr w2)
     (declare (ignore w1 w2))
-    (labels ((ref-p (i)
+    (let ((expr (list* (first raw-expr) (second raw-expr))))
+      (labels ((ref-p (i)
                (and (consp i)
                     (not (third i))
                     (member (car i) '(elt :dot))))
@@ -248,15 +250,14 @@
       (iter
         (unless (cdr expr)
           (return (first expr)))
-        (setf expr (reduce-ref expr))))))
+        (setf expr (reduce-ref expr)))))))
 
-(define-rule ternary-operator (and expression 
-                                   #\? expression
-                                   #\: expression)
-  (:destructure (condition then else)
-    `(if ,condition
-         ,then
-         ,else)))
+;; (define-rule ternary-operator (and expression-part #\? expression #\: expression)
+;;   (:destructure (condition then else)
+;;     ;; (declare (ignore w1 w2))
+;;     `(if ,condition
+;;          ,then
+;;          ,else)))
 
 
 (defmacro define-operator (name &optional (val (string-downcase (symbol-name name))))
@@ -277,8 +278,8 @@
 (define-operator not-equal "!=")
 (define-operator and "and")
 (define-operator or "or")
-;; (define-operator ?)
-;; (define-operator |:|)
+(define-operator ?)
+(define-operator |:|)
 
 (define-rule operator
   (or - not
@@ -287,7 +288,8 @@
       <= >= < >
       equal not-equal
       and or
-      ternary-operator))
+      ? |:|))
+
 
 (defparameter *infix-ops-priority* 
   '(* / rem
@@ -306,6 +308,18 @@
        (replace-subseq infix 0 2
                        (list '-
                              (second infix))))
+   
+   ;;?: ternary
+   (let* ((pos1 (position '? infix))
+          (pos2 (if pos1 (position '|:| infix :start pos1)))
+          (len (length infix)))
+     (if pos2
+         (replace-subseq infix 0 len
+                         (list 'if
+                               (->prefix (subseq infix 0 pos1))
+                               (->prefix (subseq infix (1+ pos1) pos2))
+                               (->prefix (subseq infix (1+ pos2)))))))
+   
    ;; binary and unary
    (let* ((pos (iter (for op in *infix-ops-priority*)
                      (for pos = (position op infix))
@@ -585,8 +599,8 @@
     (text desc)))
 
 (define-rule msg (and "{msg"
-                      (* whitespace) (? (and whitespace msg-mean))
-                      (* whitespace) (? (and whitespace msg-desc))
+                      (* whitespace) (? msg-mean)
+                      (* whitespace) (? msg-desc)
                       (* whitespace) "}" (? code-block) "{/msg}")
   (:destructure (start w1 mean w2 desc w3 rb code end)
     (declare (ignore start w1 w2 w3 rb end))

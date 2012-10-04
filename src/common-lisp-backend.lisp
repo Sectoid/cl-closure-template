@@ -509,8 +509,9 @@
                                          (subseq full-name (1+ pos))
                                          full-name)))
                (ns (and pos (lispify-string (subseq full-name 0 pos))))
-               (ns-pkg (or (find-package ns)
-                           (error "No such namespace: ~A" ns)))
+               (ns-pkg (and ns 
+                            (or (find-package ns)
+                                (error "No such namespace: ~A" ns))))
                (ttable (if ns
                            (package-ttable ns-pkg)
                            *ttable*)))
