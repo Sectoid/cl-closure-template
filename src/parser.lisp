@@ -555,14 +555,9 @@
   (:destructure (name tail &rest _)
     (declare (ignore _))
     (cond 
-      ((not tail)
-       (list :name name :ns nil))
-      ((equal name "name=\"") 
-       (list :name (first tail) :ns nil))
-      (t (let* ((namespace-name (text name (butlast tail)))
-                (template-name (remove #\. (text (last tail)))))
-           (list :name template-name :ns namespace-name))))))
-        
+      ((not tail) name)
+      ((equal name "name=\"") tail)
+      (t (text name tail)))))
                 
 (define-rule short-call (and "{call" whitespace call-template-name (? call-data) (? whitespace) "/}")
   (:destructure (start w1 name data w2 end)
