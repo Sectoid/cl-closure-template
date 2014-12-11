@@ -478,6 +478,14 @@
                  (:for ((:variable :x) (:range 4 10 2)) ("!")))
                (parse-single-template "{template test}{for $x in range(4, 10, 2)} ! {/for}{/template}")))
 
+;;;; msg
+
+(addtest (template-parser-test)
+  msg-1
+  (ensure-same '(:template ("test")
+                 (:msg ("test2" "test1") ("!")))
+               (parse-single-template "{template test}{msg  meaning=\"test2\" desc=\"test1\"} ! {/msg}{/template}")))
+
 ;;;; call
 
 (addtest (template-parser-test)

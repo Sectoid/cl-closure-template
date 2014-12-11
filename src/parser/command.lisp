@@ -268,6 +268,31 @@ convert possible parameters of the directive"
    (range :initarg :range :reader for-range)
    (code-block :initarg :code-block :reader for-code-block)))
 
+;;; msg
+
+(define-rule msg-mean (and "meaning=\"" (* (and (! "\"") character)) "\"")
+  (:destructure (start mean end)
+    (declare (ignore start end))
+    (text mean)))
+
+(define-rule msg-desc (and "desc=\"" (* (and (! "\"") character)) "\"")
+  (:destructure (start desc end)
+    (declare (ignore start end))
+    (text desc)))
+
+(define-rule msg (and "{msg" whitespace (? msg-mean) (? whitespace) msg-desc (? whitespace) "}" (? code-block) "{/msg}")
+  (:destructure (start w1 mean w2 desc w3 rb code end)
+    (declare (ignore start w1 w2 w3 rb end))
+    (make-instance 'msg-command
+                   :mean mean
+                   :desc desc
+                   :code-block code)))
+
+(defclass msg-command ()
+  ((desc :initarg :desc :reader msg-desc)
+   (mean :initarg :mean :reader msg-mean)
+   (code-block :initarg :code-block :reader msg-code-block)))
+
 ;;; call
 
 (define-rule short-param (and "{param" whitespace simple-name (? whitespace) #\: whitespace expression "/}")
@@ -359,6 +384,7 @@ convert possible parameters of the directive"
            for
            call
            with with-let-alias
+           msg
 
            comment
            whitespace

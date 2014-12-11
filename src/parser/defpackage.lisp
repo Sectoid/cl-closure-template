@@ -64,6 +64,10 @@
            #:for-varname
            #:for-range
            #:for-code-block
+           #:msg-command
+           #:msg-mean
+           #:msg-desc
+           #:msg-code-block
            #:call
            #:call-name
            #:call-namespace
