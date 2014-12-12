@@ -571,6 +571,13 @@ lambda function with prototype (lambda (parameters environment value))"
                        (make-dict env (list varname i))
                        out))))))
 
+;;;; msg
+
+(defmethod make-command-handler ((cmd msg-command))
+  (let ((body (make-code-block-handler (msg-code-block cmd))))
+    (named-lambda msg-command-handler (env out)
+      (funcall body env out))))
+
 ;;;; with
 
 (defmethod make-command-handler ((cmd with))

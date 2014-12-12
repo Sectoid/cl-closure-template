@@ -543,6 +543,15 @@ specified"
     (write-indent out)
     (write-line "}" out)))
 
+;;;; msg
+
+(defmethod write-command ((cmd msg-command) out)
+  (write-indent out)
+  (with-increase-indent
+    (write-command (msg-code-block cmd) out))
+  (write-indent out)
+  (write-line "}" out))
+
 ;;;; with
 
 (defmethod write-command ((cmd with) out)
