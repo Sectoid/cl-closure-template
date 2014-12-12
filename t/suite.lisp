@@ -97,6 +97,11 @@
                   (list (for-varname obj)
                         (for-range obj))
                   (for-code-block obj))))
+  (:method ((obj msg-command))
+    (s-expr (list :msg
+                  (list (msg-mean obj)
+                        (msg-desc obj))
+                  (msg-code-block obj))))
   (:method ((obj call))
     (s-expr (list* :call
                    (call-name obj)

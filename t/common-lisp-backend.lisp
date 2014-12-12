@@ -597,6 +597,16 @@ Hello world{/template}")
                  (template-call "TEST"
                                 (alexandria:plist-hash-table (list :char "b"))))))
 
+;;;; msg
+
+(addtest (common-lisp-backend-test)
+  msg-1
+  (ensure-same "my test"
+               (progn
+                 (compile-template :common-lisp-backend
+                                   "{template test}{msg desc=\"test\"}my test{/msg}{/template}")
+                 (template-call "TEST"))))
+
 ;;;; call
 
 (addtest (common-lisp-backend-test)
